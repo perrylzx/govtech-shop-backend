@@ -1,5 +1,6 @@
 import { get } from 'lodash';
 import { Items } from '../db/models/index';
+import parseGetItemsQuery from '../middlewares/ParseMiddlewares';
 import { validateDeleteItems, validatePostItems, validatePutItems } from '../middlewares/ValidationMiddlewares';
 
 const express = require('express');
@@ -7,9 +8,12 @@ const express = require('express');
 const router = express.Router();
 
 // Todo: Create tests
-router.get('/', async (_, res) => {
+router.get('/', async (req, res) => {
+  const whereObject = parseGetItemsQuery(req.query);
+
   const items = await Items.findAll({
     order: [['updatedAt', 'DESC']],
+    ...(whereObject) && { where: whereObject },
   });
   const itemCount = await Items.count();
   res.send({ items, itemCount });
